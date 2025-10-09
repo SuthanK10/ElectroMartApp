@@ -129,7 +129,7 @@ class ProductDetailScreen extends StatelessWidget {
           color: Colors.white,
           child: hasGallery
               ? PageView.builder(
-                  itemCount: gallery!.length,
+                  itemCount: gallery.length,
                   itemBuilder: (_, i) => Padding(
                     padding: const EdgeInsets.all(10),
                     child: Image.asset(gallery[i] as String, fit: BoxFit.contain),
