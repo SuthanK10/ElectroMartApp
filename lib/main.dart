@@ -39,7 +39,7 @@ class ElectroMartApp extends StatelessWidget {
           theme: light,
           darkTheme: dark,
           themeMode: mode,           
-          initialRoute: '/shell',    
+          initialRoute: '/',    
           routes: {
             '/': (_) => const LoginScreen(),
             '/register': (_) => const RegisterScreen(),
