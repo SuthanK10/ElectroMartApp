@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme_controller.dart';
+import 'login.dart'; // to use savedName/savedEmail
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -12,39 +13,36 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF25355E),
         foregroundColor: Colors.white,
-        title: const Text(
-          'Profile',
-          style: TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        title: const Text('Profile'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          //  Profile header
           Center(
             child: Column(
-              children: const [
-                CircleAvatar(
-                  backgroundColor: Colors.grey,
+              children: [
+                const CircleAvatar(
+                  radius: 45,
+                  backgroundColor: Color(0xFF25355E),
+                  child: Icon(Icons.person, size: 50, color: Colors.white),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
-                  'Suthan',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  savedName.isNotEmpty ? savedName : "User",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
                 Text(
-                  'suthan@gmail.com',
-                  style: TextStyle(color: Colors.grey),
+                  savedEmail.isNotEmpty ? savedEmail : "No email found",
+                  style: const TextStyle(color: Colors.grey),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
               ],
             ),
           ),
           const Divider(),
-
-          // Dark Mode Toggle
           Card(
             child: Column(
               children: [
@@ -63,49 +61,41 @@ class ProfileScreen extends StatelessWidget {
                       secondary: const Icon(Icons.dark_mode_outlined),
                       value: isDark,
                       onChanged: (value) {
-                        if (value) {
-                          controller.setDark();
-                        } else {
-                          controller.setLight();
-                        }
+                        value
+                            ? controller.setDark()
+                            : controller.setLight();
                       },
-                      activeColor: Colors.indigo,
+                      activeColor: const Color(0xFF25355E),
                     );
                   },
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: 16),
-
-          //  Other options
           const Card(
             child: Column(
               children: [
                 ListTile(
-                  leading: Icon(Icons.lock_outline),
-                  title: Text('Privacy & Security'),
-                ),
+                    leading: Icon(Icons.lock_outline),
+                    title: Text('Privacy & Security')),
                 Divider(height: 1),
                 ListTile(
-                  leading: Icon(Icons.help_outline),
-                  title: Text('Help & Support'),
-                ),
+                    leading: Icon(Icons.help_outline),
+                    title: Text('Help & Support')),
                 Divider(height: 1),
                 ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('About ElectroMart'),
-                ),
+                    leading: Icon(Icons.info_outline),
+                    title: Text('About ElectroMart')),
               ],
             ),
           ),
-
-          //  Log out button
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
             child: ElevatedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/'),
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/');
+              },
               icon: const Icon(Icons.logout),
               label: const Text('Log Out'),
               style: ElevatedButton.styleFrom(

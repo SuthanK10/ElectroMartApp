@@ -1,45 +1,107 @@
 import 'package:flutter/material.dart';
+import '../theme_controller.dart';
+import '../app_shell.dart';
+import 'register.dart';
 
-class LoginScreen extends StatelessWidget {
+// Demo user variables
+String savedName = "Suthan";
+String savedEmail = "suthan@gmail.com";
+String savedPassword = "suthan123";
+
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final email = TextEditingController();
-    final password = TextEditingController();
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign in')),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const SizedBox(height: 12),
-          const Icon(Icons.lock_outline, size: 64),
-          const SizedBox(height: 12),
-          TextField(
-            controller: email,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined)),
+class _LoginScreenState extends State<LoginScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  String? errorMessage;
+
+  void login() {
+    if (emailController.text.trim() == savedEmail &&
+        passwordController.text.trim() == savedPassword) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AppShell()),
+      );
+    } else {
+      setState(() {
+        errorMessage = "Invalid email or password";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
+
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: theme.themeMode,
+      builder: (context, mode, _) {
+        final isDark = mode == ThemeMode.dark;
+        return Scaffold(
+          backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF25355E),
+            title: const Text('Login'),
+            foregroundColor: Colors.white,
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: password,
-            obscureText: true,
-            decoration: const InputDecoration(labelText: 'Password', prefixIcon: Icon(Icons.lock_outline)),
+          body: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.lock_outline, size: 80, color: Color(0xFF25355E)),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email_outlined),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                if (errorMessage != null)
+                  Text(errorMessage!, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF25355E),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                  child: const Text("Login"),
+                ),
+                const SizedBox(height: 10),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                    );
+                  },
+                  child: const Text("Don't have an account? Register"),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 18),
-          ElevatedButton(
-            onPressed: () => Navigator.pushReplacementNamed(context, '/shell'),
-            style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-            child: const Text('Sign in'),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => Navigator.pushNamed(context, '/register'),
-            child: const Text('Create an account'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
