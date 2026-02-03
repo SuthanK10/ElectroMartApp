@@ -3,14 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config.dart';
+
 class ApiService {
   // ---------------------------------------------------------------------------
-  // 🟢 LIVE SERVER URL
+  // 🟢 SERVER URL (Loaded from config.dart)
   // ---------------------------------------------------------------------------
-  static const String baseUrl =
-      'https://electromartlaravel-production.up.railway.app/api';
-  static const String storageUrl =
-      'https://electromartlaravel-production.up.railway.app/storage';
+  static const String baseUrl = AppConfig.baseUrl;
+  static const String storageUrl = AppConfig.storageUrl;
 
   // Singleton pattern for easy access
   static final ApiService _instance = ApiService._internal();

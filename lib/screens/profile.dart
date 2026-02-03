@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../theme_controller.dart';
-import 'login.dart'; // to use savedName/savedEmail
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,6 +14,24 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   XFile? _pickedFile;
+  final String _name = "Suthan"; // Default placeholder
+  final String _email = "suthan@gmail.com";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    // In a real app, you'd fetch this from API or stored config
+    // For now, we use defaults or could load from SharedPreferences if we saved them on login
+    // final prefs = await SharedPreferences.getInstance();
+    // setState(() {
+    //   _name = prefs.getString('user_name') ?? "Suthan";
+    //   _email = prefs.getString('user_email') ?? "suthan@gmail.com";
+    // });
+  }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -87,16 +105,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  savedName.isNotEmpty ? savedName : "User",
+                  _name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
                 ),
-                Text(
-                  savedEmail.isNotEmpty ? savedEmail : "No email found",
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                Text(_email, style: const TextStyle(color: Colors.grey)),
                 const SizedBox(height: 20),
               ],
             ),

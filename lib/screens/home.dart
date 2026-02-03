@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../models/product.dart';
+import '../services/api_service.dart';
 import '../theme_controller.dart';
 import '../app_shell.dart';
 
@@ -11,66 +13,6 @@ class HomeScreen extends StatelessWidget {
     final isDark = ThemeController.instance.themeMode.value == ThemeMode.dark;
 
     // Featured items (same as you had)
-    const featured = [
-      _Product(
-        image: 'assets/images/iphone17pm.png',
-        name: 'iPhone 17 Pro Max',
-        price: 1499.99,
-        oldPrice: 1599.99,
-        rating: 4.8,
-        reviews: 1234,
-      ),
-      _Product(
-        image: 'assets/images/macbookair2.jpeg',
-        name: 'MacBook Air',
-        price: 1299.99,
-        oldPrice: 1399.99,
-        rating: 4.8,
-        reviews: 1234,
-      ),
-      _Product(
-        image: 'assets/images/sonyhs.png',
-        name: 'Sony WH-1000XM5',
-        price: 399.99,
-        oldPrice: 449.99,
-        rating: 4.7,
-        reviews: 860,
-      ),
-    ];
-
-    // 🔹 NEW: extra details to show on the product details page
-    final detailsByName = <String, Map<String, dynamic>>{
-      'iPhone 17 Pro Max': {
-        'desc': 'A17 Pro power with ProMotion display and advanced cameras.',
-        'features': [
-          '6.9" 120Hz OLED',
-          'A17 Pro-class chipset',
-          '48MP Pro camera system',
-          'MagSafe fast charging',
-        ],
-        'gallery': ['assets/images/iphone17pm.png'],
-      },
-      'MacBook Air': {
-        'desc': 'Ultra-portable laptop with all-day battery and silent design.',
-        'features': [
-          'Liquid Retina display',
-          'Apple Silicon performance',
-          'Up to 18 hours battery',
-          'Fanless, lightweight',
-        ],
-        'gallery': ['assets/images/macbookair2.jpeg'],
-      },
-      'Sony WH-1000XM5': {
-        'desc': 'Flagship noise-cancelling headphones with premium comfort.',
-        'features': [
-          'Industry-leading ANC',
-          '30-hour battery life',
-          'Multipoint Bluetooth',
-          'Custom EQ in app',
-        ],
-        'gallery': ['assets/images/sonyhs.png'],
-      },
-    };
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
@@ -257,17 +199,31 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // 🔹 Featured list
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: featured.length,
-            itemBuilder: (context, index) {
-              final p = featured[index];
-              return _FeaturedCard(
-                product: p,
-                details:
-                    detailsByName[p.name], // 🔹 pass extras for this product
+          // 🔹 Featured list (Dynamic from API)
+          FutureBuilder<List<dynamic>>(
+            future: ApiService().fetchProducts(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Text("No featured products found.");
+              }
+
+              // Take top 3 for "Featured"
+              final rawList = snapshot.data!;
+              final products = rawList
+                  .take(3)
+                  .map((json) => Product.fromJson(json))
+                  .toList();
+
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  return _FeaturedCard(product: products[index]);
+                },
               );
             },
           ),
@@ -318,27 +274,9 @@ class _CategoryBox extends StatelessWidget {
   }
 }
 
-class _Product {
-  final String image;
-  final String name;
-  final double price;
-  final double oldPrice;
-  final double rating;
-  final int reviews;
-  const _Product({
-    required this.image,
-    required this.name,
-    required this.price,
-    required this.oldPrice,
-    required this.rating,
-    required this.reviews,
-  });
-}
-
 class _FeaturedCard extends StatelessWidget {
-  final _Product product;
-  final Map<String, dynamic>? details; // 🔹 NEW
-  const _FeaturedCard({required this.product, this.details});
+  final Product product;
+  const _FeaturedCard({required this.product});
 
   void _openDetails(BuildContext context) {
     Navigator.pushNamed(
@@ -349,10 +287,9 @@ class _FeaturedCard extends StatelessWidget {
         'price': product.price,
         'rating': product.rating,
         'image': product.image,
-        // pass extras if present (safe to be null)
-        'desc': details?['desc'],
-        'features': details?['features'],
-        'gallery': details?['gallery'],
+        'desc': product.description ?? 'A high quality product.',
+        'features': ['Official Warranty', 'Best Price', 'Fast Delivery'],
+        'gallery': [product.image],
       },
     );
   }
@@ -360,6 +297,9 @@ class _FeaturedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = ThemeController.instance.themeMode.value == ThemeMode.dark;
+
+    // Calculate dummy old price for display effect
+    final oldPrice = product.price * 1.15;
 
     final card = Card(
       color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
@@ -379,10 +319,17 @@ class _FeaturedCard extends StatelessWidget {
                 child: Container(
                   color: Colors.white,
                   alignment: Alignment.center,
-                  child: Image.asset(
-                    product.image,
-                    fit: BoxFit.contain,
-                    height: 200,
+                  child: AspectRatio(
+                    aspectRatio: 16 / 10,
+                    child: Image.network(
+                      ApiService().getImageUrl(product.image),
+                      fit: BoxFit.contain,
+                      errorBuilder: (ctx, err, stack) => const Icon(
+                        Icons.broken_image_outlined,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -414,6 +361,15 @@ class _FeaturedCard extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     color: isDark ? Colors.white : Colors.black,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '\$${oldPrice.toStringAsFixed(0)}',
+                  style: const TextStyle(
+                    decoration: TextDecoration.lineThrough,
+                    color: Colors.grey,
+                    fontSize: 12,
                   ),
                 ),
               ],
@@ -460,7 +416,6 @@ class _FeaturedCard extends StatelessWidget {
       ),
     );
 
-    // Make the whole card tappable (optional UX sugar)
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: () => _openDetails(context),

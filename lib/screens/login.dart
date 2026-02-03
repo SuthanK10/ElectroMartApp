@@ -4,11 +4,6 @@ import '../app_shell.dart';
 import 'register.dart';
 import '../services/api_service.dart';
 
-// Demo user variables
-String savedName = "Suthan";
-String savedEmail = "suthan@gmail.com";
-String savedPassword = "suthan123";
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
