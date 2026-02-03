@@ -315,61 +315,12 @@ class _SpecsTable extends StatelessWidget {
 /* ---------- sensible default specs so you don’t touch other files ---------- */
 
 Map<String, String> _defaultSpecsFor(String name) {
-  if (name.contains('iPhone')) {
-    return {
-      'Chip/CPU': 'A17 Pro',
-      'Display': '6.9" OLED 120Hz',
-      'Storage': '256GB',
-      'Camera': '48MP triple',
-      'Battery': 'Fast charge, MagSafe',
-      'Connectivity': '5G, Wi-Fi 6E, BT 5.3',
-    };
-  }
-  if (name.contains('MacBook Air')) {
-    return {
-      'CPU/GPU': 'Apple M4',
-      'Display': '13.6" Liquid Retina',
-      'Memory': '8GB unified',
-      'Storage': '256GB SSD',
-      'Battery': 'Up to 18 hrs',
-      'Ports': '2× USB-C/Thunderbolt',
-    };
-  }
-  if (name.contains('WH-1000XM5') || name.contains('Sony')) {
-    return {
-      'Type': 'Over-ear ANC',
-      'Battery': '30 hrs',
-      'Charging': 'USB-C fast',
-      'Codecs': 'LDAC / AAC / SBC',
-      'Weight': '≈250 g',
-    };
-  }
-  if (name.contains('Watch')) {
-    return {
-      'Case': '45mm',
-      'Display': 'Always-On Retina',
-      'Sensors': 'HR, SpO₂',
-      'Water': 'WR50',
-      'Battery': 'Up to 18 hrs',
-    };
-  }
-  if (name.contains('Samsung') || name.contains('S25')) {
-    return {
-      'Chip/CPU': 'Snapdragon 8 Gen 4',
-      'Display': '6.8" LTPO 120Hz',
-      'Camera': '200MP quad',
-      'S-Pen': 'Built-in',
-      'Battery': '5000 mAh',
-    };
-  }
-  if (name.contains('iPad Pro')) {
-    return {
-      'Chip/CPU': 'Apple M4',
-      'Display': '12.9" 120Hz',
-      'Pencil': 'Apple Pencil Pro',
-      'Storage': '256GB',
-      'Battery': 'All-day',
-    };
-  }
-  return {'Model': name, 'Warranty': '1 Year'};
+  // 🔹 GENERIC SPECS (Better practice than hardcoding per product name)
+  return {
+    'Product Name': name,
+    'Condition': 'Brand New',
+    'Warranty': '1 Year Official',
+    'Availability': 'In Stock',
+    'Shipping': 'Free (2-3 Business Days)',
+  };
 }
