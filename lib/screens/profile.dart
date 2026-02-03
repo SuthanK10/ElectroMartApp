@@ -1,9 +1,38 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../theme_controller.dart';
 import 'login.dart'; // to use savedName/savedEmail
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  XFile? _pickedFile;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+
+    if (picked != null) {
+      setState(() {
+        _pickedFile = picked;
+      });
+    }
+  }
+
+  ImageProvider? _getImageProvider() {
+    if (_pickedFile == null) return null;
+    if (kIsWeb) {
+      return NetworkImage(_pickedFile!.path);
+    }
+    return FileImage(File(_pickedFile!.path));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +50,40 @@ class ProfileScreen extends StatelessWidget {
           Center(
             child: Column(
               children: [
-                const CircleAvatar(
-                  radius: 45,
-                  backgroundColor: Color(0xFF25355E),
-                  child: Icon(Icons.person, size: 50, color: Colors.white),
+                Stack(
+                  children: [
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: const Color(0xFF25355E),
+                        backgroundImage: _getImageProvider(),
+                        child: _pickedFile == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 50,
+                                color: Colors.white,
+                              )
+                            : null,
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          size: 20,
+                          color: Color(0xFF25355E),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -61,9 +120,7 @@ class ProfileScreen extends StatelessWidget {
                       secondary: const Icon(Icons.dark_mode_outlined),
                       value: isDark,
                       onChanged: (value) {
-                        value
-                            ? controller.setDark()
-                            : controller.setLight();
+                        value ? controller.setDark() : controller.setLight();
                       },
                       activeColor: const Color(0xFF25355E),
                     );
@@ -77,16 +134,19 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
-                    leading: Icon(Icons.lock_outline),
-                    title: Text('Privacy & Security')),
+                  leading: Icon(Icons.lock_outline),
+                  title: Text('Privacy & Security'),
+                ),
                 Divider(height: 1),
                 ListTile(
-                    leading: Icon(Icons.help_outline),
-                    title: Text('Help & Support')),
+                  leading: Icon(Icons.help_outline),
+                  title: Text('Help & Support'),
+                ),
                 Divider(height: 1),
                 ListTile(
-                    leading: Icon(Icons.info_outline),
-                    title: Text('About ElectroMart')),
+                  leading: Icon(Icons.info_outline),
+                  title: Text('About ElectroMart'),
+                ),
               ],
             ),
           ),
@@ -101,8 +161,10 @@ class ProfileScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red.shade600,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 20,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

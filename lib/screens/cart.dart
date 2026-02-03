@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/product.dart';
+import '../services/api_service.dart';
 
 /* ============== Simple Cart Store ============== */
 
@@ -98,11 +99,16 @@ class CartScreen extends StatelessWidget {
                 ),
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    p.image,
+                  child: Image.network(
+                    ApiService().getImageUrl(p.image),
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, stack) => const Icon(
+                      Icons.broken_image_rounded,
+                      size: 24,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
                 title: Text(
