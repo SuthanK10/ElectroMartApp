@@ -136,6 +136,7 @@ class ProductDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
               _addToCartButton(context, name, image, rating, price),
+              const SizedBox(height: 80), // 🔹 Space for SnackBar
             ],
           );
         },
@@ -311,7 +312,6 @@ class _SpecsTable extends StatelessWidget {
     );
   }
 }
-
 
 Map<String, String> _defaultSpecsFor(String name) {
   // 🔹 GENERIC SPECS (Better practice than hardcoding per product name)
