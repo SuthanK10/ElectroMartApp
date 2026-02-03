@@ -38,6 +38,7 @@ class ProductDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
+              // ignore: deprecated_member_use
               Share.share(
                 'Check out $name on ElectroMart! Price: \$$price',
                 subject: 'Look at this product!',

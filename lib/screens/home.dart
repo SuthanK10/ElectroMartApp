@@ -75,7 +75,9 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF25355E), // same color in both modes per your request
+        backgroundColor: const Color(
+          0xFF25355E,
+        ), // same color in both modes per your request
         elevation: 0,
         title: const Text('ElectroMart'),
         titleTextStyle: const TextStyle(
@@ -102,7 +104,7 @@ class HomeScreen extends StatelessWidget {
                   ? []
                   : [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       ),
@@ -116,7 +118,9 @@ class HomeScreen extends StatelessWidget {
                     color: isDark ? Colors.black : Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDark ? Colors.grey.shade800 : const Color(0x11000000),
+                      color: isDark
+                          ? Colors.grey.shade800
+                          : const Color(0x11000000),
                     ),
                   ),
                   padding: const EdgeInsets.all(10),
@@ -148,7 +152,9 @@ class HomeScreen extends StatelessWidget {
                   'Quality electronics with fast shipping.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isDark ? Colors.white70 : Colors.black.withOpacity(.7),
+                    color: isDark
+                        ? Colors.white70
+                        : Colors.black.withValues(alpha: 0.7),
                     height: 1.3,
                   ),
                 ),
@@ -188,8 +194,9 @@ class HomeScreen extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          foregroundColor:
-                              isDark ? Colors.white : const Color(0xFF25355E),
+                          foregroundColor: isDark
+                              ? Colors.white
+                              : const Color(0xFF25355E),
                         ),
                         child: const Text('View Deals'),
                       ),
@@ -216,10 +223,26 @@ class HomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
-              _CategoryBox(icon: Icons.photo_camera_back_outlined, label: 'Photos', bg: Color(0xFFEFF5FF)),
-              _CategoryBox(icon: Icons.laptop_mac, label: 'Laptops', bg: Color(0xFFEFF5FF)),
-              _CategoryBox(icon: Icons.headphones_outlined, label: 'Audio', bg: Color(0xFFEFF5FF)),
-              _CategoryBox(icon: Icons.watch_outlined, label: 'Watches', bg: Color(0xFFEFF5FF)),
+              _CategoryBox(
+                icon: Icons.photo_camera_back_outlined,
+                label: 'Photos',
+                bg: Color(0xFFEFF5FF),
+              ),
+              _CategoryBox(
+                icon: Icons.laptop_mac,
+                label: 'Laptops',
+                bg: Color(0xFFEFF5FF),
+              ),
+              _CategoryBox(
+                icon: Icons.headphones_outlined,
+                label: 'Audio',
+                bg: Color(0xFFEFF5FF),
+              ),
+              _CategoryBox(
+                icon: Icons.watch_outlined,
+                label: 'Watches',
+                bg: Color(0xFFEFF5FF),
+              ),
             ],
           ),
 
@@ -243,7 +266,8 @@ class HomeScreen extends StatelessWidget {
               final p = featured[index];
               return _FeaturedCard(
                 product: p,
-                details: detailsByName[p.name], // 🔹 pass extras for this product
+                details:
+                    detailsByName[p.name], // 🔹 pass extras for this product
               );
             },
           ),
@@ -259,7 +283,11 @@ class _CategoryBox extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color bg;
-  const _CategoryBox({required this.icon, required this.label, required this.bg});
+  const _CategoryBox({
+    required this.icon,
+    required this.label,
+    required this.bg,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +307,10 @@ class _CategoryBox extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             label,
-            style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : Colors.black),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? Colors.white70 : Colors.black,
+            ),
           ),
         ],
       ),
@@ -392,7 +423,9 @@ class _FeaturedCard extends StatelessWidget {
             // action row
             Container(
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F6FA),
+                color: isDark
+                    ? const Color(0xFF2A2A2A)
+                    : const Color(0xFFF5F6FA),
                 borderRadius: BorderRadius.circular(24),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 6),

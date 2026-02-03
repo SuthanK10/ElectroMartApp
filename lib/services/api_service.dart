@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -54,7 +55,7 @@ class ApiService {
       }
       return false;
     } catch (e) {
-      print('❌ Login Logic Error: $e');
+      debugPrint('❌ Login Logic Error: $e');
       return false;
     }
   }
@@ -78,7 +79,7 @@ class ApiService {
 
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
-      print('Registration Error: $e');
+      debugPrint('Registration Error: $e');
       return false;
     }
   }
@@ -96,7 +97,7 @@ class ApiService {
   Future<List<dynamic>> fetchProducts() async {
     final prefs = await SharedPreferences.getInstance();
     try {
-      print('🔹 Fetching products from: $baseUrl/products');
+      debugPrint('🔹 Fetching products from: $baseUrl/products');
       final response = await http.get(
         Uri.parse('$baseUrl/products'),
         headers: {
@@ -118,18 +119,18 @@ class ApiService {
         }
         return [];
       } else {
-        print('❌ Server Error: ${response.statusCode}');
+        debugPrint('❌ Server Error: ${response.statusCode}');
         return _loadCachedProducts(prefs);
       }
     } catch (e) {
-      print('⚠️ Network Error (Offline?): $e');
+      debugPrint('⚠️ Network Error (Offline?): $e');
       return _loadCachedProducts(prefs);
     }
   }
 
   List<dynamic> _loadCachedProducts(SharedPreferences prefs) {
     if (prefs.containsKey('cached_products')) {
-      print('📂 Loading products from local cache...');
+      debugPrint('📂 Loading products from local cache...');
       final cachedString = prefs.getString('cached_products')!;
       final data = jsonDecode(cachedString);
       if (data is Map && data.containsKey('data')) {

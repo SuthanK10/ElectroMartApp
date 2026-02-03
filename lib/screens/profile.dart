@@ -122,7 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onChanged: (value) {
                         value ? controller.setDark() : controller.setLight();
                       },
-                      activeColor: const Color(0xFF25355E),
+                      activeTrackColor: const Color(0xFF25355E),
                     );
                   },
                 ),

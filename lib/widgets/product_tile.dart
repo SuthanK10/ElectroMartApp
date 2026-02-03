@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
+import '../screens/cart.dart';
 
 class ProductTile extends StatelessWidget {
   final Product product;
@@ -99,9 +100,13 @@ class ProductTile extends StatelessWidget {
                     const SizedBox(width: 8),
                     IconButton(
                       onPressed: () {
-                        // TODO: Implement direct add-to-cart logic
+                        CartStore.instance.add(product);
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Added to cart!')),
+                          const SnackBar(
+                            content: Text('Added to cart!'),
+                            duration: Duration(milliseconds: 1000),
+                          ),
                         );
                       },
                       icon: const Icon(
