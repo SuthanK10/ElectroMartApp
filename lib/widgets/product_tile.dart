@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../screens/cart.dart';
+import '../services/api_service.dart';
 
 class ProductTile extends StatelessWidget {
   final Product product;
@@ -18,7 +19,7 @@ class ProductTile extends StatelessWidget {
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: Image.network(
-              product.image,
+              ApiService().getImageUrl(product.image),
               height: 160,
               width: double.infinity,
               fit: BoxFit.cover,
