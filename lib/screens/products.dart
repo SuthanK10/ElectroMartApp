@@ -181,15 +181,17 @@ class _ProductCard extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     CartStore.instance.add(product);
+                    ScaffoldMessenger.of(
+                      context,
+                    ).hideCurrentSnackBar(); // Remove previous
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('${product.name} added to cart'),
+                        duration: const Duration(milliseconds: 1500),
                         action: SnackBarAction(
                           label: 'View Cart',
                           onPressed: () {
-                            // Close snackbar (tidy)
                             ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                            // Jump to Cart tab inside the shell
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                 builder: (_) => const AppShell(startIndex: 2),

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
 
@@ -18,10 +20,9 @@ class CartStore {
   CartStore._();
   static final CartStore instance = CartStore._();
 
-  final ValueNotifier<List<CartItem>> items = ValueNotifier<List<CartItem>>(
-    <CartItem>[],
-  );
+  final ValueNotifier<List<CartItem>> items = ValueNotifier<List<CartItem>>([]);
 
+  // --- Cart Operations ---
   void add(Product p) {
     final list = [...items.value];
     final i = list.indexWhere(
@@ -59,6 +60,36 @@ class CartStore {
   void clear() => items.value = [];
 
   double get total => items.value.fold(0.0, (sum, e) => sum + e.lineTotal);
+
+  // --- Local Order History Logic ---
+  Future<void> checkout() async {
+    if (items.value.isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getString('order_history');
+    List<dynamic> history = historyJson != null ? jsonDecode(historyJson) : [];
+
+    final newOrder = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'date': DateTime.now().toIso8601String(),
+      'total': total,
+      'items': items.value
+          .map(
+            (e) => {
+              'name': e.product.name,
+              'image': e.product.image,
+              'price': e.unitPrice,
+              'qty': e.qty,
+            },
+          )
+          .toList(),
+    };
+
+    history.insert(0, newOrder); // Add to top
+    await prefs.setString('order_history', jsonEncode(history));
+
+    clear();
+  }
 }
 
 class CartScreen extends StatelessWidget {
@@ -199,7 +230,41 @@ class CartScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: items.isEmpty ? null : () {},
+                          onPressed: items.isEmpty
+                              ? null
+                              : () async {
+                                  await CartStore.instance.checkout();
+                                  if (context.mounted) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: const Icon(
+                                          Icons.check_circle,
+                                          color: Colors.green,
+                                          size: 60,
+                                        ),
+                                        content: const Text(
+                                          'Order Placed Successfully!\n\nYour order has been saved locally.',
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(
+                                                ctx,
+                                              ); // close dialog
+                                              Navigator.pushReplacementNamed(
+                                                context,
+                                                '/',
+                                              ); // go home
+                                            },
+                                            child: const Text('OK'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF25355E),
                             foregroundColor: Colors.white,
