@@ -155,7 +155,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                             style: const TextStyle(fontWeight: FontWeight.w500),
                           ),
                         );
-                      }).toList(),
+                      }),
                       const SizedBox(height: 8),
                     ],
                   ),
