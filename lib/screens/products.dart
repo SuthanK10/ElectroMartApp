@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../widgets/product_tile.dart' show Product;
+import '../models/product.dart';
+import '../services/api_service.dart';
 import 'cart.dart';
 import '../app_shell.dart'; // to jump straight to Cart tab from snackbar
 
@@ -8,102 +9,6 @@ class ProductsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Your product list (prices as double literals)
-    final products = const [
-      Product(
-        name: 'iPhone 17 Pro Max',
-        price: 1500.0,
-        rating: 4.8,
-        image: '../assets/images/iphone17pm.png',
-      ),
-      Product(
-        name: 'MacBook Air M4',
-        price: 1300.0,
-        rating: 4.8,
-        image: '../assets/images/macbookair2.jpeg',
-      ),
-      Product(
-        name: 'Sony WH-1000XM5',
-        price: 400.0,
-        rating: 4.7,
-        image: '../assets/images/sonyhs.png',
-      ),
-      Product(
-        name: 'Apple Watch Series 11',
-        price: 400.0,
-        rating: 4.6,
-        image: '../assets/images/applewatch.png',
-      ),
-      Product(
-        name: 'Samsung Galaxy S25 Ultra',
-        price: 1199.0,
-        rating: 4.9,
-        image: '../assets/images/samsungs25u.jpg',
-      ),
-      Product(
-        name: 'Apple iPad Pro M4',
-        price: 1099.0,
-        rating: 4.8,
-        image: '../assets/images/ipadpro2.jpg',
-      ),
-    ];
-
-    // 🔹 Extra per-product details to show on the product view
-    final detailsByName = <String, Map<String, dynamic>>{
-      'iPhone 17 Pro Max': {
-        'desc': 'A17 Pro chip • 120Hz ProMotion • 48MP camera • 5G',
-        'features': [
-          '6.9" OLED, 120Hz',
-          'A17 Pro-class performance',
-          '48MP triple camera',
-          'MagSafe fast charging',
-        ],
-        'gallery': [
-          '../assets/images/iphone17pm.png',
-          '../assets/images/iphone17pm.png',
-        ],
-      },
-      'MacBook Air M4': {
-        'desc': 'Ultra-portable with M-series power and all-day battery.',
-        'features': [
-          '13"/15" Liquid Retina',
-          'Apple M4 silicon',
-          'Up to 18 hours battery',
-          'Fanless, silent design',
-        ],
-        'gallery': ['../assets/images/macbookair2.jpeg'],
-      },
-      'Sony WH-1000XM5': {
-        'desc': 'Flagship ANC headphones with premium comfort.',
-        'features': [
-          'Industry-leading ANC',
-          '30-hour battery',
-          'Multipoint Bluetooth',
-          'Custom EQ in app',
-        ],
-        'gallery': ['../assets/images/sonyhs.png'],
-      },
-      'Apple Watch Series 11': {
-        'desc': 'Health, fitness, and safety on your wrist.',
-        'features': [
-          'Always-On display',
-          'Advanced health sensors',
-          'Water resistant',
-        ],
-        'gallery': ['../assets/images/applewatch.png'],
-      },
-      'Samsung Galaxy S25 Ultra': {
-        'desc': 'S-Pen powerhouse with a pro camera system.',
-        'features': ['200MP camera', 'S-Pen built in', 'LTPO 120Hz display'],
-        'gallery': ['../assets/images/samsungs25u.jpg'],
-      },
-      'Apple iPad Pro M4': {
-        'desc': 'Pro-grade tablet for creativity and productivity.',
-        'features': ['M4 performance', '120Hz ProMotion', 'Apple Pencil Pro'],
-        'gallery': ['../assets/images/ipadpro2.jpg'],
-      },
-    };
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF25355E),
@@ -113,14 +18,61 @@ class ProductsScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: products.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 14),
-        itemBuilder: (context, i) => _ProductCard(
-          product: products[i],
-          details: detailsByName[products[i].name],
-        ),
+      body: FutureBuilder<List<dynamic>>(
+        future: ApiService().fetchProducts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.inventory_2_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('No products found.'),
+                  TextButton(
+                    onPressed: () {
+                      // Force rebuild effectively
+                      (context as Element).markNeedsBuild();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final rawList = snapshot.data!;
+          final products = rawList
+              .map((json) => Product.fromJson(json))
+              .toList();
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              // Re-trigger future
+              await ApiService().fetchProducts();
+              (context as Element).markNeedsBuild();
+            },
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: products.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 14),
+              itemBuilder: (context, i) => _ProductCard(
+                product: products[i],
+                // For now, we don't have detailed hardcoded specs for API products,
+                // so we pass null or generate generic details.
+                details: null,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -139,13 +91,17 @@ class _ProductCard extends StatelessWidget {
       '/productDetail',
       arguments: {
         'name': product.name,
-        'price': product.price,    // double
+        'price': product.price,
         'rating': product.rating,
         'image': product.image,
-        // pass optional extras
-        'desc': details?['desc'],
-        'features': details?['features'],
-        'gallery': details?['gallery'],
+        'desc':
+            product.description ??
+            details?['desc'] ??
+            'No description available',
+        'features':
+            details?['features'] ??
+            ['Great performance', 'High quality', 'Best value'],
+        'gallery': details?['gallery'] ?? [product.image],
       },
     );
   }
@@ -172,12 +128,21 @@ class _ProductCard extends StatelessWidget {
                   color: Colors.white,
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Image.asset(
-                        product.image,
-                        fit: BoxFit.contain,
+                    child: Image.network(
+                      ApiService().getImageUrl(product.image),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      errorBuilder: (ctx, err, stack) => const Icon(
+                        Icons.broken_image_outlined,
+                        size: 40,
+                        color: Colors.grey,
                       ),
+                      loadingBuilder: (ctx, child, progress) {
+                        if (progress == null) return child;
+                        return const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        );
+                      },
                     ),
                   ),
                 ),

@@ -1,18 +1,5 @@
 import 'package:flutter/material.dart';
-
-class Product {
-  final String name;
-  final double price;
-  final double rating;
-  final String image;
-
-  const Product({
-    required this.name,
-    required this.price,
-    required this.rating,
-    required this.image,
-  });
-}
+import '../models/product.dart';
 
 class ProductTile extends StatelessWidget {
   final Product product;
@@ -21,27 +8,62 @@ class ProductTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Image Section
           ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(16)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: Image.network(
               product.image,
               height: 160,
               width: double.infinity,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 160,
+                  width: double.infinity,
+                  color: Colors.grey[200],
+                  child: const Icon(
+                    Icons.broken_image,
+                    size: 50,
+                    color: Colors.grey,
+                  ),
+                );
+              },
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  height: 160,
+                  width: double.infinity,
+                  color: Colors.grey[100],
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
+
+          // Details Section
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(product.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  product.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -50,25 +72,43 @@ class ProductTile extends StatelessWidget {
                     Text('${product.rating}'),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text('\$${product.price}',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
+                Text(
+                  '\$${product.price}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Actions
                 Row(
                   children: [
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () =>
                             Navigator.pushNamed(context, '/productDetail'),
-                        child: const Text('Add to Cart'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 0),
+                          // Compact button if needed, or default
+                        ),
+                        child: const Text('View Details'),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     IconButton(
-                      onPressed: () =>
-                          Navigator.pushNamed(context, '/productDetail'),
-                      icon: const Icon(Icons.chevron_right),
+                      onPressed: () {
+                        // TODO: Implement direct add-to-cart logic
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Added to cart!')),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.add_shopping_cart,
+                        color: Colors.blue,
+                      ),
+                      tooltip: 'Add to Cart',
                     ),
                   ],
                 ),

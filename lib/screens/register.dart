@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme_controller.dart';
 import 'login.dart';
+import '../services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,24 +15,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  void register() {
-    setState(() {
-      savedName = nameController.text.trim();
-      savedEmail = emailController.text.trim();
-      savedPassword = passwordController.text.trim();
-    });
+  bool _isLoading = false;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Account created successfully!"),
-        backgroundColor: Colors.green,
-      ),
+  Future<void> register() async {
+    setState(() => _isLoading = true);
+
+    final success = await ApiService().register(
+      nameController.text.trim(),
+      emailController.text.trim(),
+      passwordController.text.trim(),
     );
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+    setState(() => _isLoading = false);
+
+    if (success) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Account created successfully! Please login."),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Registration failed. Try again."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -54,8 +71,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.person_add_alt_1_outlined,
-                    size: 80, color: Color(0xFF25355E)),
+                const Icon(
+                  Icons.person_add_alt_1_outlined,
+                  size: 80,
+                  color: Color(0xFF25355E),
+                ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: nameController,
@@ -85,15 +105,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF25355E),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 48),
-                  ),
-                  child: const Text("Register"),
-                ),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: register,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF25355E),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
+                        child: const Text("Register"),
+                      ),
                 const SizedBox(height: 10),
                 TextButton(
                   onPressed: () {

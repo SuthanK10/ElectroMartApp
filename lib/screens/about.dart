@@ -68,8 +68,10 @@ class AboutScreen extends StatelessWidget {
           child: Icon(Icons.electric_bolt_rounded, size: 40),
         ),
         const SizedBox(height: 12),
-        Text('Your Technology Partner',
-            style: t.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+        Text(
+          'Your Technology Partner',
+          style: t.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+        ),
         const SizedBox(height: 8),
         Text(
           'Quality electronics, fair prices, quick delivery — all in one place.',
@@ -83,11 +85,23 @@ class AboutScreen extends StatelessWidget {
   Widget _highlights() {
     return Row(
       children: const [
-        Expanded(child: _Pill(icon: Icons.verified_outlined, label: 'Genuine')),
+        Expanded(
+          child: _Pill(icon: Icons.verified_outlined, label: 'Genuine'),
+        ),
         SizedBox(width: 10),
-        Expanded(child: _Pill(icon: Icons.local_shipping_outlined, label: 'Fast Delivery')),
+        Expanded(
+          child: _Pill(
+            icon: Icons.local_shipping_outlined,
+            label: 'Fast Delivery',
+          ),
+        ),
         SizedBox(width: 10),
-        Expanded(child: _Pill(icon: Icons.support_agent_outlined, label: '24/7 Support')),
+        Expanded(
+          child: _Pill(
+            icon: Icons.support_agent_outlined,
+            label: '24/7 Support',
+          ),
+        ),
       ],
     );
   }
@@ -103,9 +117,13 @@ class _Pill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(.5),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(.15)),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

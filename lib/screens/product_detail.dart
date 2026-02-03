@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/product_tile.dart' show Product; // your shared model
+import 'package:share_plus/share_plus.dart';
+import '../models/product.dart'; // your shared model
+import '../services/api_service.dart';
 import 'cart.dart';
 import '../app_shell.dart'; // for "View Cart" jump
 
@@ -11,16 +13,16 @@ class ProductDetailScreen extends StatelessWidget {
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<dynamic, dynamic>?;
 
-    final String name   = (args?['name']  ?? 'Product') as String;
-    final double price  = ((args?['price']  ?? 0) as num).toDouble();
+    final String name = (args?['name'] ?? 'Product') as String;
+    final double price = ((args?['price'] ?? 0) as num).toDouble();
     final double rating = ((args?['rating'] ?? 0) as num).toDouble();
-    final String image  =
+    final String image =
         (args?['image'] ?? '../assets/images/placeholder.png') as String;
 
     // optional extras coming from ProductsScreen
     final String? desc = args?['desc'] as String?;
     final List<dynamic>? features = args?['features'] as List<dynamic>?;
-    final List<dynamic>? gallery  = args?['gallery'] as List<dynamic>?;
+    final List<dynamic>? gallery = args?['gallery'] as List<dynamic>?;
     final Map<String, String> specs =
         (args?['specs'] as Map<String, String>?) ?? _defaultSpecsFor(name);
 
@@ -32,6 +34,17 @@ class ProductDetailScreen extends StatelessWidget {
           'Product Details',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () {
+              Share.share(
+                'Check out $name on ElectroMart! Price: \$$price',
+                subject: 'Look at this product!',
+              );
+            },
+          ),
+        ],
       ),
       body: OrientationBuilder(
         builder: (context, orientation) {
@@ -52,21 +65,27 @@ class ProductDetailScreen extends StatelessWidget {
                       _titlePriceRating(name, price, rating),
                       if (desc != null && desc.isNotEmpty) ...[
                         const SizedBox(height: 16),
-                        const Text('Description',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Description',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 8),
                         Text(desc, style: const TextStyle(height: 1.4)),
                       ],
                       if (features != null && features.isNotEmpty) ...[
                         const SizedBox(height: 16),
-                        const Text('Key Features',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Key Features',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 8),
                         for (final f in features) _Bullet(f.toString()),
                       ],
                       const SizedBox(height: 16),
-                      const Text('Specifications',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Specifications',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 8),
                       _SpecsTable(specs: specs),
                       const SizedBox(height: 20),
@@ -88,23 +107,29 @@ class ProductDetailScreen extends StatelessWidget {
 
               if (desc != null && desc.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                const Text('Description',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'Description',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 Text(desc, style: const TextStyle(height: 1.4)),
               ],
 
               if (features != null && features.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                const Text('Key Features',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'Key Features',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 for (final f in features) _Bullet(f.toString()),
               ],
 
               const SizedBox(height: 16),
-              const Text('Specifications',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Specifications',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               _SpecsTable(specs: specs),
 
@@ -121,6 +146,9 @@ class ProductDetailScreen extends StatelessWidget {
 
   Widget _imageBox(String image, List<dynamic>? gallery) {
     final hasGallery = gallery != null && gallery.isNotEmpty;
+    // Ensure we don't try to load the same image as a gallery if it's just a duplicate
+    // (optional polish, but keeps it simple for now)
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: AspectRatio(
@@ -130,14 +158,26 @@ class ProductDetailScreen extends StatelessWidget {
           child: hasGallery
               ? PageView.builder(
                   itemCount: gallery.length,
-                  itemBuilder: (_, i) => Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Image.asset(gallery[i] as String, fit: BoxFit.contain),
+                  itemBuilder: (_, i) => Image.network(
+                    ApiService().getImageUrl(gallery[i] as String),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    errorBuilder: (ctx, err, stack) => const Icon(
+                      Icons.broken_image_rounded,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
                   ),
                 )
-              : Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Image.asset(image, fit: BoxFit.contain),
+              : Image.network(
+                  ApiService().getImageUrl(image),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (ctx, err, stack) => const Icon(
+                    Icons.broken_image_rounded,
+                    size: 48,
+                    color: Colors.grey,
+                  ),
                 ),
         ),
       ),
@@ -148,17 +188,24 @@ class ProductDetailScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+        Text(
+          name,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
             const Icon(Icons.star, size: 20, color: Colors.amber),
             const SizedBox(width: 6),
-            Text(rating.toStringAsFixed(1),
-                style: const TextStyle(fontWeight: FontWeight.w600)),
+            Text(
+              rating.toStringAsFixed(1),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
             const Spacer(),
-            Text('\$${price.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+            Text(
+              '\$${price.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            ),
           ],
         ),
       ],
@@ -176,12 +223,9 @@ class ProductDetailScreen extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () {
-          CartStore.instance.add(Product(
-            name: name,
-            price: price,
-            rating: rating,
-            image: image,
-          ));
+          CartStore.instance.add(
+            Product(name: name, price: price, rating: rating, image: image),
+          );
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$name added to cart'),
@@ -190,7 +234,9 @@ class ProductDetailScreen extends StatelessWidget {
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (_) => const AppShell(startIndex: 2)),
+                    MaterialPageRoute(
+                      builder: (_) => const AppShell(startIndex: 2),
+                    ),
                   );
                 },
               ),
@@ -203,7 +249,9 @@ class ProductDetailScreen extends StatelessWidget {
           backgroundColor: const Color(0xFF25355E),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );
@@ -246,8 +294,10 @@ class _SpecsTable extends StatelessWidget {
           for (int i = 0; i < entries.length; i++) ...[
             ListTile(
               dense: true,
-              title: Text(entries[i].key,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              title: Text(
+                entries[i].key,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
               trailing: Text(entries[i].value),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14),
             ),

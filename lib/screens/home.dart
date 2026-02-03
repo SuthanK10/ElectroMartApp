@@ -13,7 +13,7 @@ class HomeScreen extends StatelessWidget {
     // Featured items (same as you had)
     const featured = [
       _Product(
-        image: '../assets/images/iphone17pm.png',
+        image: 'assets/images/iphone17pm.png',
         name: 'iPhone 17 Pro Max',
         price: 1499.99,
         oldPrice: 1599.99,
@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
         reviews: 1234,
       ),
       _Product(
-        image: '../assets/images/macbookair2.jpeg',
+        image: 'assets/images/macbookair2.jpeg',
         name: 'MacBook Air',
         price: 1299.99,
         oldPrice: 1399.99,
@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
         reviews: 1234,
       ),
       _Product(
-        image: '../assets/images/sonyhs.png',
+        image: 'assets/images/sonyhs.png',
         name: 'Sony WH-1000XM5',
         price: 399.99,
         oldPrice: 449.99,
@@ -48,7 +48,7 @@ class HomeScreen extends StatelessWidget {
           '48MP Pro camera system',
           'MagSafe fast charging',
         ],
-        'gallery': ['../assets/images/iphone17pm.png'],
+        'gallery': ['assets/images/iphone17pm.png'],
       },
       'MacBook Air': {
         'desc': 'Ultra-portable laptop with all-day battery and silent design.',
@@ -58,7 +58,7 @@ class HomeScreen extends StatelessWidget {
           'Up to 18 hours battery',
           'Fanless, lightweight',
         ],
-        'gallery': ['../assets/images/macbookair2.jpeg'],
+        'gallery': ['assets/images/macbookair2.jpeg'],
       },
       'Sony WH-1000XM5': {
         'desc': 'Flagship noise-cancelling headphones with premium comfort.',
@@ -68,7 +68,7 @@ class HomeScreen extends StatelessWidget {
           'Multipoint Bluetooth',
           'Custom EQ in app',
         ],
-        'gallery': ['../assets/images/sonyhs.png'],
+        'gallery': ['assets/images/sonyhs.png'],
       },
     };
 
@@ -125,7 +125,7 @@ class HomeScreen extends StatelessWidget {
                     child: AspectRatio(
                       aspectRatio: 4 / 3,
                       child: Image.asset(
-                        '../assets/images/hero.png',
+                        'assets/images/hero.png',
                         fit: BoxFit.cover,
                       ),
                     ),

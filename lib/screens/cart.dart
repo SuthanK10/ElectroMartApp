@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../widgets/product_tile.dart' show Product;
+import 'package:geolocator/geolocator.dart';
+import '../models/product.dart';
 
 /* ============== Simple Cart Store ============== */
 
@@ -16,8 +17,9 @@ class CartStore {
   CartStore._();
   static final CartStore instance = CartStore._();
 
-  final ValueNotifier<List<CartItem>> items =
-      ValueNotifier<List<CartItem>>(<CartItem>[]);
+  final ValueNotifier<List<CartItem>> items = ValueNotifier<List<CartItem>>(
+    <CartItem>[],
+  );
 
   void add(Product p) {
     final list = [...items.value];
@@ -55,10 +57,8 @@ class CartStore {
 
   void clear() => items.value = [];
 
-  double get total =>
-      items.value.fold(0.0, (sum, e) => sum + e.lineTotal);
+  double get total => items.value.fold(0.0, (sum, e) => sum + e.lineTotal);
 }
-
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -89,8 +89,10 @@ class CartScreen extends StatelessWidget {
               final p = e.product;
 
               return ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -123,8 +125,10 @@ class CartScreen extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text('${e.qty}',
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text(
+                        '${e.qty}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                     _stepBtn(
                       context,
@@ -150,28 +154,59 @@ class CartScreen extends StatelessWidget {
             valueListenable: CartStore.instance.items,
             builder: (context, items, _) {
               final total = CartStore.instance.total;
-              return Row(
+              return Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed:
-                          items.isEmpty ? null : CartStore.instance.clear,
-                      child: const Text('Clear Cart'),
+                  // Location Sensor Feature
+                  if (items.isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      width: double.infinity,
+                      child: TextButton.icon(
+                        onPressed: () async {
+                          final pos = await _determinePosition();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Delivery to: ${pos.latitude}, ${pos.longitude}',
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.my_location),
+                        label: const Text('Deliver to Current Location'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: items.isEmpty ? null : () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF25355E),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: items.isEmpty
+                              ? null
+                              : CartStore.instance.clear,
+                          child: const Text('Clear Cart'),
                         ),
                       ),
-                      child: Text('Checkout • \$${total.toStringAsFixed(2)}'),
-                    ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: items.isEmpty ? null : () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF25355E),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'Checkout • \$${total.toStringAsFixed(2)}',
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               );
@@ -182,8 +217,11 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _stepBtn(BuildContext context,
-      {required IconData icon, required VoidCallback onTap}) {
+  Widget _stepBtn(
+    BuildContext context, {
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -197,5 +235,31 @@ class CartScreen extends StatelessWidget {
         child: Icon(icon, size: 18),
       ),
     );
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+
+    return await Geolocator.getCurrentPosition();
   }
 }

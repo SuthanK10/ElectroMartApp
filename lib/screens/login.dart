@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme_controller.dart';
 import '../app_shell.dart';
 import 'register.dart';
+import '../services/api_service.dart';
 
 // Demo user variables
 String savedName = "Suthan";
@@ -20,9 +21,20 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   String? errorMessage;
 
-  void login() {
-    if (emailController.text.trim() == savedEmail &&
-        passwordController.text.trim() == savedPassword) {
+  bool _isLoading = false;
+
+  Future<void> login() async {
+    setState(() => _isLoading = true);
+
+    final success = await ApiService().login(
+      emailController.text.trim(),
+      passwordController.text.trim(),
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const AppShell()),
@@ -54,7 +66,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.lock_outline, size: 80, color: Color(0xFF25355E)),
+                const Icon(
+                  Icons.lock_outline,
+                  size: 80,
+                  color: Color(0xFF25355E),
+                ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: emailController,
@@ -76,17 +92,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 10),
                 if (errorMessage != null)
-                  Text(errorMessage!, style: const TextStyle(color: Colors.red)),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF25355E),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 48),
+                  Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red),
                   ),
-                  child: const Text("Login"),
-                ),
+                const SizedBox(height: 20),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF25355E),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
+                        child: const Text("Login"),
+                      ),
                 const SizedBox(height: 10),
                 TextButton(
                   onPressed: () {
