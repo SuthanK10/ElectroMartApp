@@ -228,7 +228,7 @@ class ProductDetailScreen extends StatelessWidget {
           CartStore.instance.add(
             Product(name: name, price: price, rating: rating, image: image),
           );
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).clearSnackBars();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$name added to cart'),

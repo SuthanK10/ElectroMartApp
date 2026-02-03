@@ -102,7 +102,7 @@ class ProductTile extends StatelessWidget {
                     IconButton(
                       onPressed: () {
                         CartStore.instance.add(product);
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).clearSnackBars();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Added to cart!'),
