@@ -312,7 +312,6 @@ class _SpecsTable extends StatelessWidget {
   }
 }
 
-/* ---------- sensible default specs so you don’t touch other files ---------- */
 
 Map<String, String> _defaultSpecsFor(String name) {
   // 🔹 GENERIC SPECS (Better practice than hardcoding per product name)
