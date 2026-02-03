@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'order_history.dart';
 
 import '../theme_controller.dart';
 
@@ -145,9 +146,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Card(
+          Card(
             child: Column(
               children: [
+                ListTile(
+                  leading: const Icon(Icons.history),
+                  title: const Text('Order History'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OrderHistoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
                 ListTile(
                   leading: Icon(Icons.lock_outline),
                   title: Text('Privacy & Security'),
