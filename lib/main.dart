@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'app_shell.dart';
+import 'screens/cart.dart'; // To access CartStore
 import 'screens/login.dart';
 import 'screens/register.dart';
 import 'screens/product_detail.dart';
@@ -33,19 +35,22 @@ class ElectroMartApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: ThemeController.instance.themeMode,
       builder: (_, mode, __) {
-        return MaterialApp(
-          title: 'ElectroMart',
-          debugShowCheckedModeBanner: false,
-          theme: light,
-          darkTheme: dark,
-          themeMode: mode,           
-          initialRoute: '/',    
-          routes: {
-            '/': (_) => const LoginScreen(),
-            '/register': (_) => const RegisterScreen(),
-            '/shell': (_) => const AppShell(),
-            '/productDetail': (_) => const ProductDetailScreen(),
-          },
+        return ChangeNotifierProvider(
+          create: (_) => CartStore(),
+          child: MaterialApp(
+            title: 'ElectroMart',
+            debugShowCheckedModeBanner: false,
+            theme: light,
+            darkTheme: dark,
+            themeMode: mode,
+            initialRoute: '/',
+            routes: {
+              '/': (_) => const LoginScreen(),
+              '/register': (_) => const RegisterScreen(),
+              '/shell': (_) => const AppShell(),
+              '/productDetail': (_) => const ProductDetailScreen(),
+            },
+          ),
         );
       },
     );

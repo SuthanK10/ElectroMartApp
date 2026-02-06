@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // 🔹 PROVIDER
 import 'package:share_plus/share_plus.dart';
 import '../models/product.dart'; // your shared model
 import '../services/api_service.dart';
@@ -225,7 +226,7 @@ class ProductDetailScreen extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () {
-          CartStore.instance.add(
+          context.read<CartStore>().add(
             Product(name: name, price: price, rating: rating, image: image),
           );
           ScaffoldMessenger.of(context).clearSnackBars();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // 🔹 PROVIDER
 import '../models/product.dart';
 import '../services/api_service.dart';
 import 'cart.dart';
@@ -180,10 +181,8 @@ class _ProductCard extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    CartStore.instance.add(product);
-                    ScaffoldMessenger.of(
-                      context,
-                    ).hideCurrentSnackBar(); // Remove previous
+                    context.read<CartStore>().add(product);
+                    ScaffoldMessenger.of(context).clearSnackBars();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('${product.name} added to cart'),

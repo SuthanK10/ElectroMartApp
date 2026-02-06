@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../screens/cart.dart';
 import '../services/api_service.dart';
@@ -101,7 +102,7 @@ class ProductTile extends StatelessWidget {
                     const SizedBox(width: 8),
                     IconButton(
                       onPressed: () {
-                        CartStore.instance.add(product);
+                        context.read<CartStore>().add(product);
                         ScaffoldMessenger.of(context).clearSnackBars();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(

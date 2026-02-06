@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
-
-/* ============== Simple Cart Store ============== */
 
 class CartItem {
   final Product product;
@@ -16,54 +15,54 @@ class CartItem {
   double get lineTotal => unitPrice * qty;
 }
 
-class CartStore {
-  CartStore._();
-  static final CartStore instance = CartStore._();
+// 🔹 PROVIDER: Extending ChangeNotifier to showcase external state management
+class CartStore extends ChangeNotifier {
+  List<CartItem> _items = [];
 
-  final ValueNotifier<List<CartItem>> items = ValueNotifier<List<CartItem>>([]);
+  List<CartItem> get items => _items;
 
   // --- Cart Operations ---
   void add(Product p) {
-    final list = [...items.value];
-    final i = list.indexWhere(
+    final i = _items.indexWhere(
       (e) => e.product.name == p.name && e.product.image == p.image,
     );
     if (i >= 0) {
-      list[i].qty += 1;
+      _items[i].qty += 1;
     } else {
-      list.add(CartItem(p, qty: 1));
+      _items.add(CartItem(p, qty: 1));
     }
-    items.value = list;
+    notifyListeners();
   }
 
   void increment(int index) {
-    final list = [...items.value];
-    list[index].qty += 1;
-    items.value = list;
+    _items[index].qty += 1;
+    notifyListeners();
   }
 
   void decrement(int index) {
-    final list = [...items.value];
-    if (list[index].qty > 1) {
-      list[index].qty -= 1;
+    if (_items[index].qty > 1) {
+      _items[index].qty -= 1;
     } else {
-      list.removeAt(index);
+      _items.removeAt(index);
     }
-    items.value = list;
+    notifyListeners();
   }
 
   void removeAt(int index) {
-    final list = [...items.value]..removeAt(index);
-    items.value = list;
+    _items.removeAt(index);
+    notifyListeners();
   }
 
-  void clear() => items.value = [];
+  void clear() {
+    _items = [];
+    notifyListeners();
+  }
 
-  double get total => items.value.fold(0.0, (sum, e) => sum + e.lineTotal);
+  double get total => _items.fold(0.0, (sum, e) => sum + e.lineTotal);
 
   // --- Local Order History Logic ---
   Future<void> checkout() async {
-    if (items.value.isEmpty) return;
+    if (_items.isEmpty) return;
 
     final prefs = await SharedPreferences.getInstance();
     final historyJson = prefs.getString('order_history');
@@ -73,7 +72,7 @@ class CartStore {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'date': DateTime.now().toIso8601String(),
       'total': total,
-      'items': items.value
+      'items': _items
           .map(
             (e) => {
               'name': e.product.name,
@@ -92,6 +91,8 @@ class CartStore {
   }
 }
 
+// Note: CartStore class is defined above in this file (or move to separate file if preferred)
+
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
@@ -106,9 +107,11 @@ class CartScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
-      body: ValueListenableBuilder<List<CartItem>>(
-        valueListenable: CartStore.instance.items,
-        builder: (context, items, _) {
+      // 🔹 PROVIDER: Using Consumer to listen to changes
+      body: Consumer<CartStore>(
+        builder: (context, cart, _) {
+          final items = cart.items;
+
           if (items.isEmpty) {
             return const Center(child: Text('Your cart is empty.'));
           }
@@ -158,7 +161,7 @@ class CartScreen extends StatelessWidget {
                     _stepBtn(
                       context,
                       icon: Icons.remove,
-                      onTap: () => CartStore.instance.decrement(i),
+                      onTap: () => cart.decrement(i),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -170,11 +173,11 @@ class CartScreen extends StatelessWidget {
                     _stepBtn(
                       context,
                       icon: Icons.add,
-                      onTap: () => CartStore.instance.increment(i),
+                      onTap: () => cart.increment(i),
                     ),
                     IconButton(
                       tooltip: 'Remove item',
-                      onPressed: () => CartStore.instance.removeAt(i),
+                      onPressed: () => cart.removeAt(i),
                       icon: const Icon(Icons.delete_outline),
                     ),
                   ],
@@ -187,10 +190,10 @@ class CartScreen extends StatelessWidget {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: ValueListenableBuilder<List<CartItem>>(
-            valueListenable: CartStore.instance.items,
-            builder: (context, items, _) {
-              final total = CartStore.instance.total;
+          child: Consumer<CartStore>(
+            builder: (context, cart, _) {
+              final items = cart.items;
+              final total = cart.total;
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -221,9 +224,7 @@ class CartScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: items.isEmpty
-                              ? null
-                              : CartStore.instance.clear,
+                          onPressed: items.isEmpty ? null : cart.clear,
                           child: const Text('Clear Cart'),
                         ),
                       ),
@@ -233,7 +234,7 @@ class CartScreen extends StatelessWidget {
                           onPressed: items.isEmpty
                               ? null
                               : () async {
-                                  await CartStore.instance.checkout();
+                                  await cart.checkout();
                                   if (context.mounted) {
                                     showDialog(
                                       context: context,
