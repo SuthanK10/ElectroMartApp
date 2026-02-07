@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'app_shell.dart';
+import 'services/api_service.dart';
 import 'screens/cart.dart'; // To access CartStore
 import 'screens/login.dart';
 import 'screens/register.dart';
@@ -43,15 +44,39 @@ class ElectroMartApp extends StatelessWidget {
             theme: light,
             darkTheme: dark,
             themeMode: mode,
-            initialRoute: '/',
+            home: const AuthCheck(),
             routes: {
-              '/': (_) => const LoginScreen(),
+              '/login': (_) => const LoginScreen(),
               '/register': (_) => const RegisterScreen(),
               '/shell': (_) => const AppShell(),
               '/productDetail': (_) => const ProductDetailScreen(),
             },
           ),
         );
+      },
+    );
+  }
+}
+
+class AuthCheck extends StatelessWidget {
+  const AuthCheck({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: ApiService().loadToken(), // Loads token from SharedPrefs
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        // Check if we have a valid token
+        if (ApiService().isAuthenticated) {
+          return const AppShell();
+        } else {
+          return const LoginScreen();
+        }
       },
     );
   }

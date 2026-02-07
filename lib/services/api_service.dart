@@ -24,6 +24,8 @@ class ApiService {
     _token = prefs.getString('auth_token');
   }
 
+  bool get isAuthenticated => _token != null;
+
   // ---------------------------------------------------------------------------
   // 🔐 AUTHENTICATION
   // ---------------------------------------------------------------------------

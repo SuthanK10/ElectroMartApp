@@ -21,14 +21,14 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> login() async {
     setState(() => _isLoading = true);
 
-    final success = await ApiService().login(
+    final error = await ApiService().login(
       emailController.text.trim(),
       passwordController.text.trim(),
     );
 
     setState(() => _isLoading = false);
 
-    if (success) {
+    if (error == null) {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else {
       setState(() {
-        errorMessage = "Invalid email or password";
+        errorMessage = error;
       });
     }
   }

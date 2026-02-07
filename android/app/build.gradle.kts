@@ -42,3 +42,20 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    constraints {
+        implementation("androidx.activity:activity:1.9.3") {
+            because("Avoids dependency on AGP 8.9.1")
+        }
+        implementation("androidx.activity:activity-ktx:1.9.3") {
+            because("Avoids dependency on AGP 8.9.1")
+        }
+        implementation("androidx.core:core-ktx:1.13.1") {
+            because("Avoids dependency on AGP 8.9.1")
+        }
+        implementation("androidx.core:core:1.13.1") {
+            because("Avoids dependency on AGP 8.9.1")
+        }
+    }
+}

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'order_history.dart';
+import '../services/api_service.dart';
 
 import '../theme_controller.dart';
 
@@ -182,8 +183,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
             child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/');
+              onPressed: () async {
+                await ApiService().logout();
+                if (context.mounted) {
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/login', (route) => false);
+                }
               },
               icon: const Icon(Icons.logout),
               label: const Text('Log Out'),
