@@ -93,8 +93,24 @@ class CartStore extends ChangeNotifier {
 
 // Note: CartStore class is defined above in this file (or move to separate file if preferred)
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Clear any lingering SnackBars (like "Added to cart") so they don't block the checkout button
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
