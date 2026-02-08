@@ -73,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Edit Profile'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -91,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
@@ -106,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 return;
               }
 
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(dialogContext); // Close dialog
 
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Updating profile...')),
