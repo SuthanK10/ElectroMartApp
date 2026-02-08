@@ -102,6 +102,79 @@ class ApiService {
   }
 
   // ---------------------------------------------------------------------------
+  // 👤 USER PROFILE
+  // ---------------------------------------------------------------------------
+
+  Future<Map<String, dynamic>?> fetchUser() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/user'),
+        headers: {
+          'Accept': 'application/json',
+          if (_token != null) 'Authorization': 'Bearer $_token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (e) {
+      debugPrint('❌ Fetch User Error: $e');
+    }
+    return null;
+  }
+
+  Future<String?> updateProfile(String name, String email) async {
+    try {
+      // Trying standard Laravel resource update or specific endpoint
+      // Using POST with _method=PUT is safer for some PHP configs, but standard PUT should work.
+      final response = await http.put(
+        Uri.parse(
+          '$baseUrl/user/profile-information',
+        ), // Standard Fortify/Breeze
+        // If 404, we might need to fallback to '$baseUrl/user'
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (_token != null) 'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({'name': name, 'email': email}),
+      );
+
+      // Fallback if the standard profile-information route doesn't exist
+      if (response.statusCode == 404) {
+        return _updateProfileFallback(name, email);
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 202) {
+        return null; // Success
+      } else {
+        final data = jsonDecode(response.body);
+        return data['message'] ?? 'Update failed';
+      }
+    } catch (e) {
+      return 'Connection Error: $e';
+    }
+  }
+
+  Future<String?> _updateProfileFallback(String name, String email) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/user'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (_token != null) 'Authorization': 'Bearer $_token',
+      },
+      body: jsonEncode({'name': name, 'email': email}),
+    );
+
+    if (response.statusCode == 200) {
+      return null;
+    }
+    return 'Update failed (${response.statusCode})';
+  }
+
+  // ---------------------------------------------------------------------------
   // 🛒 ORDERS
   // ---------------------------------------------------------------------------
 

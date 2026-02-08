@@ -23,6 +23,14 @@ class ElectroMartApp extends StatelessWidget {
         seedColor: seed,
         brightness: Brightness.light,
       ),
+      inputDecorationTheme: const InputDecorationTheme(
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: seed, width: 2),
+        ),
+        labelStyle: TextStyle(color: seed),
+        floatingLabelStyle: TextStyle(color: seed),
+        prefixIconColor: seed,
+      ),
     );
 
     final ThemeData dark = ThemeData(
