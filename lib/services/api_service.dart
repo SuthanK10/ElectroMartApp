@@ -102,6 +102,37 @@ class ApiService {
   }
 
   // ---------------------------------------------------------------------------
+  // 🛒 ORDERS
+  // ---------------------------------------------------------------------------
+
+  Future<bool> createOrder(
+    double total,
+    List<Map<String, dynamic>> items,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/orders'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (_token != null) 'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({'total_price': total, 'items': items}),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      } else {
+        debugPrint('❌ Order Failed: ${response.statusCode} - ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('❌ Order Exception: $e');
+      return false;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // 📦 DATA & PRODUCTS (Offline Supported)
   // ---------------------------------------------------------------------------
 

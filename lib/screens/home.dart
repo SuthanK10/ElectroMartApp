@@ -322,7 +322,8 @@ class _FeaturedCard extends StatelessWidget {
                     aspectRatio: 16 / 10,
                     child: Image.network(
                       ApiService().getImageUrl(product.image),
-                      fit: BoxFit.contain,
+                      key: ValueKey(product.image),
+                      fit: BoxFit.cover,
                       errorBuilder: (ctx, err, stack) => const Icon(
                         Icons.broken_image_outlined,
                         size: 40,

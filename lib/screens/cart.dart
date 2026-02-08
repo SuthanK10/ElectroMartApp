@@ -61,9 +61,26 @@ class CartStore extends ChangeNotifier {
   double get total => _items.fold(0.0, (sum, e) => sum + e.lineTotal);
 
   // --- Local Order History Logic ---
-  Future<void> checkout() async {
-    if (_items.isEmpty) return;
+  Future<String?> checkout() async {
+    if (_items.isEmpty) return "Cart is empty";
 
+    // 1. Try to sync to backend if logged in
+    if (ApiService().isAuthenticated) {
+      final apiItems = _items.map((e) {
+        return {
+          'product_id': e.product.id,
+          'quantity': e.qty,
+          'unit_price': e.unitPrice,
+        };
+      }).toList();
+
+      final success = await ApiService().createOrder(total, apiItems);
+      if (!success) {
+        return "Failed to submit order to server. Please check internet.";
+      }
+    }
+
+    // 2. Save locally
     final prefs = await SharedPreferences.getInstance();
     final historyJson = prefs.getString('order_history');
     List<dynamic> history = historyJson != null ? jsonDecode(historyJson) : [];
@@ -88,6 +105,7 @@ class CartStore extends ChangeNotifier {
     await prefs.setString('order_history', jsonEncode(history));
 
     clear();
+    return null; // Success
   }
 }
 
@@ -101,6 +119,8 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  bool _isCheckingOut = false;
+
   @override
   void initState() {
     super.initState();
@@ -240,18 +260,32 @@ class _CartScreenState extends State<CartScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: items.isEmpty ? null : cart.clear,
+                          onPressed: items.isEmpty || _isCheckingOut
+                              ? null
+                              : cart.clear,
                           child: const Text('Clear Cart'),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: items.isEmpty
+                          onPressed: items.isEmpty || _isCheckingOut
                               ? null
                               : () async {
-                                  await cart.checkout();
-                                  if (context.mounted) {
+                                  setState(() => _isCheckingOut = true);
+                                  final error = await cart.checkout();
+                                  setState(() => _isCheckingOut = false);
+
+                                  if (!context.mounted) return;
+
+                                  if (error != null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(error),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  } else {
                                     showDialog(
                                       context: context,
                                       builder: (ctx) => AlertDialog(
@@ -261,7 +295,7 @@ class _CartScreenState extends State<CartScreen> {
                                           size: 60,
                                         ),
                                         content: const Text(
-                                          'Order Placed Successfully!\n\nYour order has been saved locally.',
+                                          'Order Placed Successfully!\n\nSaved to local history and server.',
                                           textAlign: TextAlign.center,
                                         ),
                                         actions: [
@@ -289,9 +323,18 @@ class _CartScreenState extends State<CartScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: Text(
-                            'Checkout • \$${total.toStringAsFixed(2)}',
-                          ),
+                          child: _isCheckingOut
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  'Checkout • \$${total.toStringAsFixed(2)}',
+                                ),
                         ),
                       ),
                     ],
