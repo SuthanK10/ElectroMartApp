@@ -30,7 +30,7 @@ class ApiService {
   // 🔐 AUTHENTICATION
   // ---------------------------------------------------------------------------
 
-  Future<bool> login(String email, String password) async {
+  Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
@@ -52,13 +52,22 @@ class ApiService {
         if (_token != null) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('auth_token', _token!);
-          return true;
+          return null;
+        }
+        return 'Login successful but no token received.';
+      } else {
+        try {
+          final errorData = jsonDecode(response.body);
+          return errorData['message'] ??
+              errorData['error'] ??
+              'Login failed (${response.statusCode})';
+        } catch (_) {
+          return 'Login failed (${response.statusCode})';
         }
       }
-      return false;
     } catch (e) {
       debugPrint('❌ Login Logic Error: $e');
-      return false;
+      return 'Connection Error: $e';
     }
   }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
-import '../theme_controller.dart';
 import '../app_shell.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -10,7 +9,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = ThemeController.instance.themeMode.value == ThemeMode.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Featured items (same as you had)
 
@@ -247,7 +246,7 @@ class _CategoryBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = ThemeController.instance.themeMode.value == ThemeMode.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: 74,
@@ -296,7 +295,7 @@ class _FeaturedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = ThemeController.instance.themeMode.value == ThemeMode.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Calculate dummy old price for display effect
     final oldPrice = product.price * 1.15;
