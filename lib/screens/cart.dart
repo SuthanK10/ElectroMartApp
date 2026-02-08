@@ -1,6 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import 'dart:async';
+
+// ... (existing imports)
+
+// existing code ...
+
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product.dart';
@@ -108,15 +116,62 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   bool _isCheckingOut = false;
 
+  // Accelerometer subscription
+  StreamSubscription<UserAccelerometerEvent>? _accelerometerSubscription;
+  DateTime _lastShakeTime = DateTime.now();
+
   @override
   void initState() {
     super.initState();
-    // Clear any lingering SnackBars (like "Added to cart") so they don't block the checkout button
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ScaffoldMessenger.of(context).clearSnackBars();
       }
     });
+
+    // Initialize Accelerometer for Shake Detection
+    _initShakeDetection();
+  }
+
+  void _initShakeDetection() {
+    _accelerometerSubscription =
+        userAccelerometerEventStream(
+          samplingPeriod: SensorInterval.gameInterval,
+        ).listen((UserAccelerometerEvent event) {
+          // Simple shake detection logic
+          double acceleration = event.x.abs() + event.y.abs() + event.z.abs();
+          if (acceleration > 30) {
+            // Threshold for shake
+            final now = DateTime.now();
+            if (now.difference(_lastShakeTime) > const Duration(seconds: 2)) {
+              _lastShakeTime = now;
+              _handleShake();
+            }
+          }
+        });
+  }
+
+  void _handleShake() {
+    if (!mounted) return;
+
+    // Logic to clear cart on shake
+    final cart = Provider.of<CartStore>(context, listen: false);
+    if (cart.items.isNotEmpty) {
+      cart.clear(); // Clear the cart
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cart cleared by shake! 📳'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _accelerometerSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -227,15 +282,49 @@ class _CartScreenState extends State<CartScreen> {
                       width: double.infinity,
                       child: TextButton.icon(
                         onPressed: () async {
-                          final pos = await _determinePosition();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Delivery to: ${pos.latitude}, ${pos.longitude}',
+                          try {
+                            final pos = await _determinePosition();
+
+                            // Get address from coordinates
+                            List<Placemark> placemarks =
+                                await placemarkFromCoordinates(
+                                  pos.latitude,
+                                  pos.longitude,
+                                );
+
+                            String locationText =
+                                '${pos.latitude}, ${pos.longitude}';
+
+                            if (placemarks.isNotEmpty) {
+                              final place = placemarks.first;
+                              // e.g. "Mountain View, United States"
+                              final city =
+                                  place.locality ??
+                                  place.subAdministrativeArea ??
+                                  '';
+                              final country = place.country ?? '';
+
+                              if (city.isNotEmpty) {
+                                locationText = '$city, $country\n$locationText';
+                              }
+                            }
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Delivery to: $locationText'),
                                 ),
-                              ),
-                            );
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error getting location: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           }
                         },
                         icon: const Icon(Icons.my_location),
