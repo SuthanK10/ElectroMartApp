@@ -64,23 +64,10 @@ class CartStore extends ChangeNotifier {
   Future<String?> checkout() async {
     if (_items.isEmpty) return "Cart is empty";
 
-    // 1. Try to sync to backend if logged in
-    if (ApiService().isAuthenticated) {
-      final apiItems = _items.map((e) {
-        return {
-          'product_id': e.product.id,
-          'quantity': e.qty,
-          'unit_price': e.unitPrice,
-        };
-      }).toList();
+    // Simulate processing
+    await Future.delayed(const Duration(seconds: 1));
 
-      final error = await ApiService().createOrder(total, apiItems);
-      if (error != null) {
-        return error;
-      }
-    }
-
-    // 2. Save locally
+    // Save locally
     final prefs = await SharedPreferences.getInstance();
     final historyJson = prefs.getString('order_history');
     List<dynamic> history = historyJson != null ? jsonDecode(historyJson) : [];
@@ -295,7 +282,7 @@ class _CartScreenState extends State<CartScreen> {
                                           size: 60,
                                         ),
                                         content: const Text(
-                                          'Order Placed Successfully!\n\nSaved to local history and server.',
+                                          'Order Placed Successfully!',
                                           textAlign: TextAlign.center,
                                         ),
                                         actions: [
