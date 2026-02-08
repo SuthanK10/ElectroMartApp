@@ -74,9 +74,9 @@ class CartStore extends ChangeNotifier {
         };
       }).toList();
 
-      final success = await ApiService().createOrder(total, apiItems);
-      if (!success) {
-        return "Failed to submit order to server. Please check internet.";
+      final error = await ApiService().createOrder(total, apiItems);
+      if (error != null) {
+        return error;
       }
     }
 

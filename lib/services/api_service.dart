@@ -178,13 +178,13 @@ class ApiService {
   // 🛒 ORDERS
   // ---------------------------------------------------------------------------
 
-  Future<bool> createOrder(
+  Future<String?> createOrder(
     double total,
     List<Map<String, dynamic>> items,
   ) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/orders'),
+        Uri.parse('$baseUrl/checkout'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -194,14 +194,20 @@ class ApiService {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        return true;
+        return null; // Success
       } else {
         debugPrint('❌ Order Failed: ${response.statusCode} - ${response.body}');
-        return false;
+        try {
+          final errorData = jsonDecode(response.body);
+          return errorData['message'] ??
+              'Order failed (${response.statusCode})';
+        } catch (_) {
+          return 'Order failed (${response.statusCode})';
+        }
       }
     } catch (e) {
       debugPrint('❌ Order Exception: $e');
-      return false;
+      return 'Connection Error: $e';
     }
   }
 
