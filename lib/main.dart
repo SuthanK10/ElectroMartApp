@@ -24,12 +24,39 @@ class ElectroMartApp extends StatelessWidget {
         brightness: Brightness.light,
       ),
       inputDecorationTheme: const InputDecorationTheme(
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: seed, width: 2),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(color: seed),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
-        labelStyle: TextStyle(color: seed),
-        floatingLabelStyle: TextStyle(color: seed),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: seed, width: 1.5),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: seed, width: 2.5),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        labelStyle: TextStyle(
+          color: seed,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+        floatingLabelStyle: TextStyle(color: seed, fontWeight: FontWeight.bold),
         prefixIconColor: seed,
+        hintStyle: TextStyle(color: Colors.black54),
+      ),
+      textTheme: const TextTheme(
+        bodyLarge: TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w500,
+        ),
+        bodyMedium: TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
 
