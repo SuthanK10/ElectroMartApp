@@ -184,7 +184,7 @@ class ApiService {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/checkout'),
+        Uri.parse('$baseUrl/place-order'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -202,7 +202,7 @@ class ApiService {
           return errorData['message'] ??
               'Order failed (${response.statusCode})';
         } catch (_) {
-          return 'Order failed (${response.statusCode})';
+          return 'Order failed (${response.statusCode}) - Route: $baseUrl/place-order';
         }
       }
     } catch (e) {
