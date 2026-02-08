@@ -58,7 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: theme.themeMode,
       builder: (context, mode, _) {
-        final isDark = mode == ThemeMode.dark;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
           appBar: AppBar(
